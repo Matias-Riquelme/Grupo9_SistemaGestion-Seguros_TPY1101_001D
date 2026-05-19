@@ -1,0 +1,48 @@
+# ═══════════════════════════════════════════════════════════════════
+# Usar MySQL LOCAL (tu PC) en lugar del MySQL del contenedor
+# ═══════════════════════════════════════════════════════════════════
+# Los microservicios apuntan a MySQL en tu PC vía host.docker.internal.
+# Puedes definir en .env: MYSQL_PORT, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE
+#
+# Uso:
+#   docker compose -f docker-compose.yml -f docker-compose.local-mysql.yml up -d
+#
+# Requisitos: MySQL corriendo en tu PC (puerto 3306 por defecto).
+# ═══════════════════════════════════════════════════════════════════
+
+services:
+  usuario-service:
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:${MYSQL_PORT:-3306}/${MYSQL_DATABASE:-db_sistema_seguros}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-admin}
+    depends_on:
+      keycloak:
+        condition: service_healthy
+
+  incidentes-service:
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:${MYSQL_PORT:-3306}/${MYSQL_DATABASE:-db_sistema_seguros}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-admin}
+    depends_on:
+      keycloak:
+        condition: service_healthy
+
+  vehiculo-combustible-service:
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:${MYSQL_PORT:-3306}/${MYSQL_DATABASE:-db_sistema_seguros}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-admin}
+    depends_on:
+      keycloak:
+        condition: service_healthy
+
+  documentacion-service:
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://host.docker.internal:${MYSQL_PORT:-3306}/${MYSQL_DATABASE:-db_sistema_seguros}?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true&createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-admin}
+    depends_on:
+      keycloak:
+        condition: service_healthy

@@ -1,0 +1,253 @@
+services:
+  # ========== DATABASE FOR KEYCLOAK ==========
+  keycloak-db:
+    image: postgres:15-alpine
+    container_name: keycloak-db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak_password
+    volumes:
+      - keycloak-db-data:/var/lib/postgresql/data
+    networks:
+      - tad-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U keycloak" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ========== KEYCLOAK SERVER (Puerto 9090) ==========
+  keycloak:
+    image: keycloak/keycloak:23.0.7
+    container_name: keycloak-server
+    ports:
+      - "9090:8080"
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak_password
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin_password
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_PROXY: edge
+      KC_HEALTH_ENABLED: "true"
+    command: start-dev --import-realm
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    networks:
+      - tad-network
+    healthcheck:
+      test: [ "CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q 'UP'" ]
+      interval: 30s
+      timeout: 15s
+      retries: 10
+      start_period: 60s
+
+  # ========== MYSQL DATABASE FOR MICROSERVICES ==========
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: db_sistema_seguros
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - tad-network
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "localhost" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ========== API GATEWAY (Puerto 8080) ==========
+  api-gateway:
+    build:
+      context: ./ApiGateway/ApiGateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-spring-boot-realm-dev}
+      # Cambio: Sincronizado con el Client ID de "nati" usado en el frontend
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-spring-boot-client-dev}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-HrIdrnJjg91jEkLdFVMFS7Y6stLHk2qG}
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/spring-boot-realm-dev
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/spring-boot-realm-dev/protocol/openid-connect/certs
+      JWT_SECRET: ${JWT_SECRET:-mySecretKeyForJWTTokenValidationThatShouldBeAtLeast32Characters}
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    networks:
+      - tad-network
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ========== MICROSERVICIO DE GESTIÓN DE USUARIOS (Puerto 8081) ==========
+  usuario-service:
+    build:
+      context: ./BackendTad/tadGestionUsuario
+      dockerfile: Dockerfile
+    container_name: usuario-service
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/db_sistema_seguros?createDatabaseIfNotExist=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: admin
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-spring-boot-realm-dev}
+      # Cambio: Sincronizado con el Client ID de "nati"
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-spring-boot-client-dev}
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/spring-boot-realm-dev
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/spring-boot-realm-dev/protocol/openid-connect/certs
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-HrIdrnJjg91jEkLdFVMFS7Y6stLHk2qG}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin_password}
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - tad-network
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8081/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ========== MICROSERVICIO DE INCIDENTES, PÓLIZAS Y SINIESTROS (Puerto 8082) ==========
+  incidentes-service:
+    build:
+      context: ./MicroservicioIncidenteSiniestros
+      dockerfile: Dockerfile
+    container_name: incidentes-service
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_MAIL_HOST: smtp.gmail.com
+      SPRING_MAIL_PORT: 587
+      SPRING_MAIL_USERNAME: riquelmemati1904@gmail.com
+      SPRING_MAIL_PASSWORD: uiwmdnijxvwwhtxv
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/db_sistema_seguros?createDatabaseIfNotExist=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: admin
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-spring-boot-realm-dev}
+      # Cambio: Sincronizado con el Client ID de "nati"
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-spring-boot-client-dev}
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/spring-boot-realm-dev
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/spring-boot-realm-dev/protocol/openid-connect/certs
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-HrIdrnJjg91jEkLdFVMFS7Y6stLHk2qG}
+      JWT_RESOURCE_ID: spring-boot-client-dev
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - tad-network
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8082/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ========== MICROSERVICIO DE VEHÍCULOS Y COMBUSTIBLE (Puerto 8083) ==========
+  vehiculo-combustible-service:
+    build:
+      context: ./tad/tad
+      dockerfile: Dockerfile
+    container_name: vehiculo-combustible-service
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/db_sistema_seguros?createDatabaseIfNotExist=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: admin
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/spring-boot-realm-dev
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/spring-boot-realm-dev/protocol/openid-connect/certs
+      # Cambio: Sincronizado para resolver Error 500 y desincronización de roles
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-spring-boot-client-dev}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-spring-boot-realm-dev}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-HrIdrnJjg91jEkLdFVMFS7Y6stLHk2qG}
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - tad-network
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8083/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ========== MICROSERVICIO DE DOCUMENTACIÓN (Puerto 8084) ==========
+  documentacion-service:
+    build:
+      context: ./MicroservicioDocumentacion
+      dockerfile: Dockerfile
+    container_name: documentacion-service
+    ports:
+      - "8084:8084"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/db_sistema_seguros?createDatabaseIfNotExist=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: admin
+      KEYCLOAK_SERVER_URL: http://keycloak:8080
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM:-spring-boot-realm-dev}
+      # Cambio: Sincronizado con el Client ID de "nati"
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID:-spring-boot-client-dev}
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/spring-boot-realm-dev
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/spring-boot-realm-dev/protocol/openid-connect/certs
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET:-HrIdrnJjg91jEkLdFVMFS7Y6stLHk2qG}
+      FILE_STORAGE_PATH: /data/storage
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    volumes:
+      - documentacion-storage:/data/storage
+    networks:
+      - tad-network
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:8084/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+# ========== NETWORKS ==========
+networks:
+  tad-network:
+    driver: bridge
+
+# ========== VOLUMES ==========
+volumes:
+  keycloak-db-data:
+  mysql-data:
+  documentacion-storage:

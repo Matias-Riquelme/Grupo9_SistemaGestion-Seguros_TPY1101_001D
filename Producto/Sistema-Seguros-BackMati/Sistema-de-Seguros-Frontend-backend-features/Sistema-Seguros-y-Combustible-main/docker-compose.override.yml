@@ -1,0 +1,20 @@
+# Override para desarrollo local
+# Este archivo se combina automáticamente con docker-compose.yml
+
+services:
+  documentacion-service:
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+    # Reiniciar automáticamente en desarrollo
+    restart: unless-stopped
+
+  mysql-db:
+    # Puerto alternativo para evitar conflictos con MySQL local
+    ports:
+      - "3307:3306"
+    # Healthcheck más rápido en desarrollo
+    healthcheck:
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s

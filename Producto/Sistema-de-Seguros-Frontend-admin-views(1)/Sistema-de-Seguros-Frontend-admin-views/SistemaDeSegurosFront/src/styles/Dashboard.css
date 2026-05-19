@@ -1,0 +1,450 @@
+/* GestionDashboard.css */
+
+:root {
+    --chart-color-1: rgba(54, 162, 235, 0.7);
+    --chart-color-2: rgba(255, 99, 132, 0.7);
+    --chart-color-3: rgba(255, 206, 86, 0.7);
+    --chart-color-4: rgba(75, 192, 192, 0.7);
+    --chart-color-5: rgba(153, 102, 255, 0.7);
+    --chart-color-6: rgba(255, 159, 64, 0.7);
+
+    --chart-border-1: rgba(54, 162, 235, 1);
+    --chart-border-2: rgba(255, 99, 132, 1);
+    --chart-border-3: rgba(255, 206, 86, 1);
+    --chart-border-4: rgba(75, 192, 192, 1);
+    --chart-border-5: rgba(153, 102, 255, 1);
+    --chart-border-6: rgba(255, 159, 64, 1);
+
+    --chart-empty-bg: rgba(200, 200, 200, 0.5);
+    --chart-empty-border: rgba(200, 200, 200, 1);
+}
+
+.dashboard-container {
+    padding: 20px;
+    /* animation: fadeIn 0.5s ease-in-out; */
+}
+
+.dashboard-header {
+    margin-bottom: 30px;
+}
+
+.dashboard-header h1 {
+    color: var(--color-primary, #2c3e50);
+}
+
+.dashboard-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.dashboard-kpi-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f9fbfd 100%);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: default;
+}
+
+.dashboard-kpi-card:hover {
+    transform: translateY(-5px);
+}
+
+.dashboard-kpi-content {
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-kpi-title {
+    font-size: 0.9rem;
+    color: #7f8c8d;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+}
+
+.dashboard-kpi-value {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+    margin: 0;
+    line-height: 1;
+}
+
+.dashboard-icon-wrapper {
+    padding: 16px;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+}
+
+/* Specific colors for icon wrappers */
+.icon-siniestros {
+    background-color: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+}
+
+.icon-polizas {
+    background-color: rgba(52, 152, 219, 0.15);
+    color: #3498db;
+}
+
+.icon-vehiculos {
+    background-color: rgba(241, 196, 15, 0.15);
+    color: #f1c40f;
+}
+
+.icon-asegurados {
+    background-color: rgba(46, 204, 113, 0.15);
+    color: #2ecc71;
+}
+
+.dashboard-chart-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.dashboard-chart-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+.dashboard-chart-title {
+    font-size: 1.2rem;
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 60vh;
+}
+
+.loading-content {
+    text-align: center;
+    color: var(--color-text-muted);
+}
+
+.loading-text {
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.error-container {
+    padding: 40px;
+    text-align: center;
+}
+
+.error-box {
+    background: #fee;
+    color: #c00;
+    padding: 20px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.error-text {
+    font-size: 1.2rem;
+    margin: 0;
+    font-weight: 500;
+}
+
+.chart-container-wrapper {
+    position: relative;
+    height: 300px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-left-color: var(--color-primary, #3498db);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Actividad Reciente */
+.dashboard-recent-section {
+    margin-top: 30px;
+    width: 100%;
+}
+
+.dashboard-recent-card {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.02);
+}
+
+.dashboard-recent-title {
+    font-size: 1.2rem;
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.dashboard-table-wrapper {
+    overflow-x: auto;
+}
+
+.dashboard-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+.dashboard-table th {
+    text-align: left;
+    padding: 12px 15px;
+    color: #7f8c8d;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #f1f3f5;
+}
+
+.dashboard-table td {
+    padding: 15px;
+    background-color: #fcfdfe;
+    border-top: 1px solid #f1f3f5;
+    border-bottom: 1px solid #f1f3f5;
+    font-size: 0.95rem;
+    color: #2c3e50;
+    transition: background-color 0.2s ease;
+}
+
+.dashboard-table td:first-child {
+    border-left: 1px solid #f1f3f5;
+    border-radius: 10px 0 0 10px;
+}
+
+.dashboard-table td:last-child {
+    border-right: 1px solid #f1f3f5;
+    border-radius: 0 10px 10px 0;
+}
+
+.dashboard-table tr:hover td {
+    background-color: #f1f8ff;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    display: inline-block;
+}
+
+/* Colores de Estado */
+.status-pend {
+    background-color: #fff9db;
+    color: #f59f00;
+}
+
+/* Pendiente */
+.status-proc {
+    background-color: #e3fafc;
+    color: #1098ad;
+}
+
+/* En Proceso */
+.status-cerr {
+    background-color: #ebfbee;
+    color: #37b24d;
+}
+
+/* Cerrado */
+.status-rech {
+    background-color: #fff5f5;
+    color: #f03e3e;
+}
+
+/* Rechazado */
+.status-def {
+    background-color: #f1f3f5;
+    color: #495057;
+}
+
+/* Por defecto */
+
+.activity-id {
+    font-weight: 700;
+    color: var(--color-primary, #3498db);
+}
+
+.activity-date {
+    color: #95a5a6;
+    font-size: 0.85rem;
+}
+
+/* Sección de Alertas */
+.dashboard-alerts-section {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.alert-card {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    border-left: 5px solid transparent;
+    transition: transform 0.2s ease;
+    gap: 15px;
+}
+
+.alert-card:hover {
+    transform: translateY(-3px);
+}
+
+.alert-card.alert-danger {
+    border-left-color: #e74c3c;
+}
+
+.alert-card.alert-warning {
+    border-left-color: #f1c40f;
+}
+
+.alert-icon {
+    position: relative;
+    width: 50px;
+    height: 50px;
+    background: #fdf2f2;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    color: #e74c3c;
+}
+
+.alert-warning .alert-icon {
+    background: #fef9e7;
+    color: #f1c40f;
+}
+
+.alert-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #e74c3c;
+    color: white;
+    font-size: 0.75rem;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 2px solid white;
+}
+
+.alert-info {
+    flex: 1;
+}
+
+.alert-info h4 {
+    margin: 0 0 5px 0;
+    font-size: 1.1rem;
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.alert-info p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #7f8c8d;
+}
+
+.vencimientos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.vencimiento-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #34495e;
+    padding: 4px 0;
+    border-bottom: 1px dashed #eee;
+}
+
+.vencimiento-item:last-child {
+    border-bottom: none;
+}
+
+.v-date {
+    font-weight: 600;
+    color: #f39c12;
+}
+
+.alert-action-btn {
+    padding: 8px 15px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #2c3e50;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.alert-action-btn:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+}

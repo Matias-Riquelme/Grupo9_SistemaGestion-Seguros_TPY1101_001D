@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Notificación del Sistema de Seguros</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #F5F7F4;
+            margin: 0;
+            padding: 0;
+            color: #045524;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(90deg, #6D9E3A 60%, #F26928 100%);
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            letter-spacing: 1px;
+        }
+        .content {
+            padding: 30px;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+        .content p {
+            margin: 0 0 15px;
+        }
+        .message-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #6D9E3A;
+            padding: 20px;
+            margin: 20px 0;
+            white-space: pre-wrap;
+            color: #213547;
+            line-height: 1.7;
+            border-radius: 4px;
+        }
+        .separator {
+            border: none;
+            border-top: 1px solid #c8d8ce;
+            margin: 20px 0;
+        }
+        .action-button {
+            display: inline-block;
+            background: linear-gradient(90deg, #6D9E3A 60%, #F26928 100%);
+            color: #ffffff;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(109, 158, 58, 0.3);
+            transition: all 0.3s ease;
+        }
+        .action-button:hover {
+            background: linear-gradient(90deg, #5A8A30 60%, #d9571e 100%);
+            box-shadow: 0 4px 10px rgba(109, 158, 58, 0.4);
+            transform: translateY(-1px);
+        }
+        .footer {
+            background-color: #E6EEE9;
+            color: #045524;
+            padding: 15px;
+            text-align: center;
+            font-size: 14px;
+        }
+        .footer-link {
+            color: #6D9E3A;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <img src="cid:logoTad" alt="Logo TAD" style="max-width: 200px; height: auto; margin-bottom: 10px;">
+            <h1>Sistema de Seguros</h1>
+        </div>
+        <div class="content">
+            <p><strong>Estimado/a usuario/a,</strong></p>
+            <p>Se ha registrado un nuevo incidente en el <strong>Sistema Integrado de Seguros</strong>.</p>
+            
+            <table style="width:100%; border-collapse:collapse; margin:20px 0; font-size:15px;">
+                <tr th:if="${idIncidente}">
+                    <td style="padding:8px 12px; font-weight:bold; background:#f0f5ec; border:1px solid #dde5d8; width:40%;">ID Incidente</td>
+                    <td style="padding:8px 12px; border:1px solid #dde5d8;" th:text="${idIncidente}">-</td>
+                </tr>
+                <tr th:if="${tipoIncidente}">
+                    <td style="padding:8px 12px; font-weight:bold; background:#f0f5ec; border:1px solid #dde5d8;">Tipo de Incidente</td>
+                    <td style="padding:8px 12px; border:1px solid #dde5d8;" th:text="${tipoIncidente}">-</td>
+                </tr>
+                <tr th:if="${fechaIncidente}">
+                    <td style="padding:8px 12px; font-weight:bold; background:#f0f5ec; border:1px solid #dde5d8;">Fecha del Incidente</td>
+                    <td style="padding:8px 12px; border:1px solid #dde5d8;" th:text="${fechaIncidente}">-</td>
+                </tr>
+                <tr th:if="${conductorInvolucrado}">
+                    <td style="padding:8px 12px; font-weight:bold; background:#f0f5ec; border:1px solid #dde5d8;">Conductor</td>
+                    <td style="padding:8px 12px; border:1px solid #dde5d8;" th:text="${conductorInvolucrado}">-</td>
+                </tr>
+                <tr th:if="${rutConductor}">
+                    <td style="padding:8px 12px; font-weight:bold; background:#f0f5ec; border:1px solid #dde5d8;">RUT Conductor</td>
+                    <td style="padding:8px 12px; border:1px solid #dde5d8;" th:text="${rutConductor}">-</td>
+                </tr>
+                <tr th:if="${patenteVehiculo}">
+                    <td style="padding:8px 12px; font-weight:bold; background:#f0f5ec; border:1px solid #dde5d8;">Patente(s)</td>
+                    <td style="padding:8px 12px; border:1px solid #dde5d8;" th:text="${patenteVehiculo}">-</td>
+                </tr>
+                <tr th:if="${base}">
+                    <td style="padding:8px 12px; font-weight:bold; background:#f0f5ec; border:1px solid #dde5d8;">Base</td>
+                    <td style="padding:8px 12px; border:1px solid #dde5d8;" th:text="${base}">-</td>
+                </tr>
+                <tr th:if="${operacion}">
+                    <td style="padding:8px 12px; font-weight:bold; background:#f0f5ec; border:1px solid #dde5d8;">Operación</td>
+                    <td style="padding:8px 12px; border:1px solid #dde5d8;" th:text="${operacion}">-</td>
+                </tr>
+                <tr th:if="${fechaNotificacion}">
+                    <td style="padding:8px 12px; font-weight:bold; background:#f0f5ec; border:1px solid #dde5d8;">Fecha de Notificación</td>
+                    <td style="padding:8px 12px; border:1px solid #dde5d8;" th:text="${fechaNotificacion}">-</td>
+                </tr>
+            </table>
+
+            <div th:if="${cuerpo}" class="message-box">
+                <p style="margin:0 0 5px; font-weight:bold; color:#045524;">Relato:</p>
+                <div th:utext="${cuerpo}">Contenido del relato...</div>
+            </div>
+            
+            <hr class="separator" />
+            
+            <p style="text-align: center;">
+                <!--[if mso]>
+                <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" style="height:44px;v-text-anchor:middle;width:200px;" arcsize="11%" stroke="f" fillcolor="#6D9E3A">
+                <w:anchorlock/>
+                <center>
+                <![endif]-->
+                <a th:href="${enlaceFormulario}" 
+                   href="http://localhost:5173/gestion-incidente" 
+                   style="background: linear-gradient(90deg, #6D9E3A 0%, #F26928 100%); display: inline-block; color: #ffffff; padding: 12px 32px; text-decoration: none; border-radius: 5px; font-weight: 600; font-size: 16px; box-shadow: 0 2px 6px rgba(109, 158, 58, 0.3); mso-hide: all;"
+                   target="_blank" 
+                   rel="noopener noreferrer">
+                    Ver en el Sistema
+                </a>
+                <!--[if mso]>
+                </center>
+                </v:roundrect>
+                <![endif]-->
+            </p>
+            
+            <p style="font-size: 13px; color: #5a6b60; text-align: center;">
+                Si el botón no funciona, copie y pegue esta URL en su navegador:<br/>
+                <span th:text="${enlaceFormulario}">http://localhost:5173/gestion-incidente</span>
+            </p>
+            
+            <hr class="separator" />
+            
+            <p style="font-size: 14px; color: #666;">
+                Si tiene alguna pregunta o necesita asistencia adicional, no dude en ponerse en contacto con nuestro equipo de soporte.
+            </p>
+            
+            <p style="margin-top: 20px;">
+                <strong>Atentamente,</strong><br/>
+                Departamento de Tecnología e Innovación
+            </p>
+        </div>
+        <div class="footer">
+            &copy; 2026 Sistema Integrado de Seguros.<br/>
+            Todos los derechos reservados.
+        </div>
+    </div>
+</body>
+</html>
